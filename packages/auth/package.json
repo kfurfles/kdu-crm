@@ -1,0 +1,24 @@
+{
+  "name": "@crm-kdu/auth",
+  "type": "module",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    },
+    "./*": {
+      "default": "./src/*.ts"
+    }
+  },
+  "scripts": {},
+  "dependencies": {
+    "@crm-kdu/db": "workspace:*",
+    "@crm-kdu/env": "workspace:*",
+    "better-auth": "catalog:",
+    "dotenv": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@crm-kdu/config": "workspace:*",
+    "typescript": "catalog:"
+  }
+}

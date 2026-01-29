@@ -1,0 +1,29 @@
+{
+  "name": "@crm-kdu/api",
+  "type": "module",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    },
+    "./*": {
+      "default": "./src/*.ts"
+    }
+  },
+  "scripts": {},
+  "dependencies": {
+    "@crm-kdu/auth": "workspace:*",
+    "@crm-kdu/db": "workspace:*",
+    "@crm-kdu/env": "workspace:*",
+    "@orpc/client": "catalog:",
+    "@orpc/openapi": "catalog:",
+    "@orpc/server": "catalog:",
+    "@orpc/zod": "catalog:",
+    "better-auth": "catalog:",
+    "dotenv": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@crm-kdu/config": "workspace:*",
+    "typescript": "catalog:"
+  }
+}
