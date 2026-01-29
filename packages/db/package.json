@@ -7,6 +7,9 @@
     },
     "./*": {
       "default": "./src/*.ts"
+    },
+    "./client": {
+      "default": "./prisma/generated/client.ts"
     }
   },
   "scripts": {

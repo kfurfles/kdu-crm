@@ -9,7 +9,10 @@
       "default": "./src/*.ts"
     }
   },
-  "scripts": {},
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
   "dependencies": {
     "@crm-kdu/auth": "workspace:*",
     "@crm-kdu/db": "workspace:*",
@@ -24,6 +27,11 @@
   },
   "devDependencies": {
     "@crm-kdu/config": "workspace:*",
-    "typescript": "catalog:"
+    "@prisma/adapter-pg": "^7.3.0",
+    "@testcontainers/postgresql": "^11.11.0",
+    "@types/pg": "^8.16.0",
+    "pg": "^8.17.2",
+    "typescript": "catalog:",
+    "vitest": "^4.0.18"
   }
 }

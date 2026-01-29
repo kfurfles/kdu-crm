@@ -9,6 +9,13 @@ model User {
   sessions      Session[]
   accounts      Account[]
 
+  // CRM Relations
+  tags                 Tag[]
+  clients              Client[]
+  appointmentsAssigned Appointment[] @relation("AppointmentAssignee")
+  appointmentsCreated  Appointment[] @relation("AppointmentCreator")
+  interactions         Interaction[]
+
   @@unique([email])
   @@map("user")
 }
