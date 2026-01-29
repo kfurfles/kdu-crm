@@ -4,12 +4,12 @@ import { auth } from "@crm-kdu/auth";
 import { fromNodeHeaders } from "better-auth/node";
 
 export async function createContext(req: IncomingHttpHeaders) {
-  const session = await auth.api.getSession({
-    headers: fromNodeHeaders(req),
-  });
-  return {
-    session,
-  };
+	const session = await auth.api.getSession({
+		headers: fromNodeHeaders(req),
+	});
+	return {
+		session,
+	};
 }
 
 export type Context = Awaited<ReturnType<typeof createContext>>;
