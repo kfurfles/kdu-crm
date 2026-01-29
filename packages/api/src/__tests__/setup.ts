@@ -27,6 +27,17 @@ export let prisma: PrismaClient;
 let testPool: Pool;
 
 /**
+ * Create a test context with the current prisma instance.
+ * Used to call oRPC handlers in integration tests.
+ */
+export function createTestContext() {
+	return {
+		session: null,
+		prisma,
+	};
+}
+
+/**
  * Get or create a shared PostgreSQL container with template database.
  */
 async function getOrCreateContainer(): Promise<StartedPostgreSqlContainer> {

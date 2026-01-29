@@ -24,7 +24,7 @@ enum AppointmentStatus {
 
 model ClientField {
   id        String    @id @default(cuid())
-  name      String    // Nome de exibição
+  name      String    @unique // Nome de exibição (único)
   type      FieldType // Tipo do campo
   required  Boolean   @default(false)
   options   String[]  // Opções para SELECT
