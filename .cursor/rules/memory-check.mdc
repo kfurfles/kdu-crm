@@ -1,0 +1,129 @@
+---
+alwaysApply: true
+---
+# MEMORY CHECK — CRM Follow-up
+
+Este documento deve ser consultado em **toda iteração** para manter contexto e garantir a seleção correta de roles.
+
+---
+
+## PROPÓSITO DO PROJETO
+
+Sistema de CRM para gestão de follow-up de clientes em corretora.
+
+**Regra Core:** Todo atendimento DEVE gerar um próximo follow-up. É impossível finalizar sem agendar.
+
+**Objetivo:** Garantir que nenhum cliente fique sem acompanhamento, mantendo o ciclo de relacionamento contínuo.
+
+---
+
+## DOCUMENTAÇÃO DE REFERÊNCIA
+
+- **Planejamento completo:** `.docs/plan/00-overview.md`
+- **Features detalhadas:** `.docs/plan/01-*.md` até `18-*.md`
+- **Ideia original:** `.docs/client_ideia.md` e `.docs/minha-ideia.md`
+
+---
+
+## ROLES DISPONÍVEIS
+
+O projeto possui 3 roles especializadas em `.cursor/roles/`. Cada uma tem escopo restrito e não pode assumir responsabilidades de outra.
+
+### Quando usar cada Role:
+
+| Situação | Role | Arquivo |
+|----------|------|---------|
+| Definir requisitos, comportamento esperado, regras de negócio | **PO** | `PO.mdc` |
+| Esclarecer "o que" e "por que" de uma feature | **PO** | `PO.mdc` |
+| Descrever casos de uso em formato BDD | **PO** | `PO.mdc` |
+| Implementar rotas, handlers, queries no backend | **Backend** | `BACKEND.mdc` |
+| Criar/modificar schema Prisma | **Backend** | `BACKEND.mdc` |
+| Escrever testes de integração | **Backend** | `BACKEND.mdc` |
+| Implementar componentes React, telas, formulários | **Frontend** | `FRONTEND.mdc` |
+| Criar rotas com TanStack Router | **Frontend** | `FRONTEND.mdc` |
+| Usar componentes shadcn/ui | **Frontend** | `FRONTEND.mdc` |
+
+---
+
+## REGRAS DE SELEÇÃO INTELIGENTE
+
+### Acionar PO quando:
+- O usuário pedir para definir ou esclarecer comportamento
+- Houver ambiguidade sobre regras de negócio
+- For necessário descrever uma feature nova
+- O usuário perguntar "o que" ou "por que" algo deve funcionar de certa forma
+
+### Acionar Backend quando:
+- O usuário pedir para implementar API, endpoint ou lógica de servidor
+- For necessário criar ou modificar schema do banco
+- O usuário pedir para escrever testes
+- A tarefa envolver oRPC, Prisma, PostgreSQL ou Better Auth
+
+### Acionar Frontend quando:
+- O usuário pedir para criar tela, componente ou interface
+- For necessário implementar formulário ou interação de UI
+- A tarefa envolver React, TanStack Router ou shadcn/ui
+- O usuário pedir para criar navegação ou layout
+
+### NÃO acionar nenhuma role quando:
+- For uma pergunta geral sobre o projeto
+- For necessário coordenar múltiplas áreas
+- O usuário pedir explicitamente para não usar roles
+
+---
+
+## STACK DO PROJETO (IMUTÁVEL)
+
+```
+Monorepo:     pnpm + Turborepo
+Frontend:     Vite + React + TanStack Router + shadcn/ui
+Backend:      oRPC (similar ao tRPC)
+Auth:         Better Auth (já configurado)
+Database:     PostgreSQL + Prisma
+```
+
+**Não sugerir, comparar ou substituir nenhuma tecnologia.**
+
+---
+
+## ESCOPO ATUAL (MVP)
+
+### Incluído:
+- Campos customizáveis para clientes (definidos pelo admin)
+- Tags livres
+- Gestão de clientes com atribuição a usuários
+- Calendário de atendimentos (mês/semana/dia)
+- Fluxo de finalização com próximo follow-up obrigatório
+- Cancelamento de atendimentos com motivo
+- Histórico de interações com snapshot dos dados
+
+### Excluído do MVP:
+- Permissões de segurança (tudo liberado por enquanto)
+- Dashboard e métricas
+- Notificações e lembretes
+- Assistente AI/Gemini
+- Importação CSV
+
+---
+
+## PRINCÍPIOS IMPORTANTES
+
+1. **Snapshot de dados:** Interações salvam os dados do cliente como estavam no momento, preservando histórico mesmo se campos forem alterados/removidos.
+
+2. **Operação atômica:** Finalização de atendimento (criar interação + marcar DONE + criar próximo OPEN) deve ser tudo ou nada.
+
+3. **Primeiro atendimento:** Ao cadastrar cliente, já cria o primeiro appointment automaticamente.
+
+4. **Imutabilidade:** Interações não podem ser editadas após criação.
+
+---
+
+## CHECKLIST DE ITERAÇÃO
+
+Antes de responder, verificar:
+
+- [ ] A solicitação está clara ou preciso pedir esclarecimento?
+- [ ] Qual role é mais adequada para esta tarefa?
+- [ ] A tarefa está alinhada com o planejamento em `.docs/plan/`?
+- [ ] Estou respeitando a stack definida?
+- [ ] Estou dentro do escopo do MVP?
