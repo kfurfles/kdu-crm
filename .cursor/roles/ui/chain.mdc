@@ -1,0 +1,18 @@
+---
+alwaysApply: false
+---
+# 🔗 SYSTEM-PROMPT CHAIN — DESIGN (ZERO-DRIFT)
+
+## 📌 Estrutura do chain
+
+```
+1. SYSTEM PROMPT — DESIGNER DE INTERFACE (ANTI-DRIFT) (designer.mdc)
+2. DESIGN TOKEN RULES — CONTRACT (ANTI-DRIFT) (tokens.mdc)
+```
+
+Hierarquia de autoridade (não negociável):
+
+1. Tokens reais (Tailwind config / CSS variables)
+2. Design Token Rules
+3. System Prompt — Designer
+4. Opinião ou preferência

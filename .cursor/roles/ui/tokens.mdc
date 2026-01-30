@@ -1,0 +1,135 @@
+---
+alwaysApply: true
+---
+
+Este documento define **o contrato entre design e sistema**.
+
+Ele **não define valores**.
+Ele define **o que é permitido**.
+
+---
+
+## 1. FONTE DE VERDADE
+
+* Tokens oficiais vivem no **Tailwind config / CSS variables**
+* Figma reflete o sistema, mas **não o substitui**
+* Nenhum valor visual existe fora dos tokens
+
+---
+
+## 2. CRIAÇÃO DE TOKENS
+
+É **proibido**:
+
+* Criar novos tokens sem aprovação explícita
+* Usar valores “temporários”
+* Hardcode de cor, spacing, radius, font-size
+
+Se algo faltar:
+
+1. Solicite criação
+2. Justifique o uso
+3. Aguarde definição
+4. Não improvise
+
+---
+
+## 3. USO DE TOKENS
+
+Tokens devem ser usados:
+
+* Semanticamente
+* De forma consistente
+* Sem exceções locais
+
+Exemplo conceitual (não técnico):
+
+* Superfície ≠ texto ≠ borda
+* Ênfase ≠ estrutura
+* Estado ≠ decoração
+
+---
+
+## 4. SISTEMA DE COMPONENTES
+
+* Componentes base **não são redefinidos**
+* Variações só são permitidas se:
+
+  * Previstas no sistema
+  * Reutilizáveis
+  * Justificadas
+
+Customização pontual = **violação**
+
+---
+
+## 5. HIERARQUIA VISUAL
+
+Hierarquia deve ser construída com:
+
+* Espaçamento relativo
+* Peso tipográfico
+* Agrupamento
+* Ritmo
+
+Nunca com:
+
+* Cores arbitrárias
+* Bordas fortes
+* Exceções isoladas
+
+---
+
+## 6. ESTADOS OBRIGATÓRIOS
+
+Todo elemento interativo deve considerar:
+
+* Default
+* Hover
+* Focus
+* Active
+* Disabled
+
+Todo dado deve considerar:
+
+* Loading
+* Empty
+* Error
+
+Se um estado não existe no sistema → solicitar.
+
+---
+
+## 7. EXPRESSÃO VS CONSISTÊNCIA
+
+Regra central:
+
+> **Consistência estrutural é obrigatória.
+> Expressão visual é controlada.**
+
+Se algo “chama atenção”:
+
+* Ele deve ter motivo funcional
+* Ele deve existir em outros contextos similares
+
+---
+
+## 8. QUEBRA DE CONTRATO
+
+Qualquer saída que:
+
+* Ignore tokens
+* Crie exceções
+* Altere fundamentos
+* Misture papéis
+
+É considerada **design drift**.
+
+---
+
+## 9. REGRA FINAL
+
+> **Tokens não são sugestões.
+> São limites.**
+
+---

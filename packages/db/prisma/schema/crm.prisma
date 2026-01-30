@@ -18,6 +18,11 @@ enum AppointmentStatus {
   CANCELLED
 }
 
+enum ClientHistoryType {
+  CREATED
+  INTERACTION
+}
+
 // ============================================
 // CLIENT FIELD (Campo Customizável)
 // ============================================
@@ -60,18 +65,20 @@ model Tag {
 // ============================================
 
 model Client {
-  id         String   @id @default(cuid())
-  whatsapp   String   // Formato internacional
+  id         String    @id @default(cuid())
+  whatsapp   String    // Formato internacional
   notes      String?
   assignedTo String?
-  assignee   User?    @relation(fields: [assignedTo], references: [id])
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  assignee   User?     @relation(fields: [assignedTo], references: [id])
+  deletedAt  DateTime? // Soft delete
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 
   fieldValues  ClientFieldValue[]
   tags         ClientTag[]
   appointments Appointment[]
   interactions Interaction[]
+  history      ClientHistory[]
 
   @@map("client")
 }
@@ -153,4 +160,22 @@ model Interaction {
   @@index([clientId])
   @@index([userId])
   @@map("interaction")
+}
+
+// ============================================
+// CLIENT HISTORY (Histórico de Eventos)
+// ============================================
+
+model ClientHistory {
+  id        String            @id @default(cuid())
+  clientId  String
+  client    Client            @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  type      ClientHistoryType
+  data      Json              // Dados flexíveis do evento
+  createdBy String
+  creator   User              @relation(fields: [createdBy], references: [id])
+  createdAt DateTime          @default(now())
+
+  @@index([clientId])
+  @@map("client_history")
 }

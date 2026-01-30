@@ -2,6 +2,7 @@ import prisma from "@crm-kdu/db";
 import { env } from "@crm-kdu/env/server";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
+import { admin } from "better-auth/plugins";
 
 export const auth = betterAuth({
 	database: prismaAdapter(prisma, {
@@ -19,5 +20,5 @@ export const auth = betterAuth({
 			httpOnly: true,
 		},
 	},
-	plugins: [],
+	plugins: [admin()],
 });

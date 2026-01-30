@@ -1,6 +1,15 @@
 import { execSync } from "node:child_process";
 import path from "node:path";
-import { PrismaClient } from "@crm-kdu/db/client";
+import {
+	type Appointment,
+	type AppointmentStatus,
+	type Client,
+	type ClientField,
+	type FieldType,
+	PrismaClient,
+	type Tag,
+	type User,
+} from "@crm-kdu/db/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import {
 	PostgreSqlContainer,
@@ -170,3 +179,87 @@ afterAll(async () => {
 		await container.stop();
 	}
 });
+
+/**
+ * Create a test user for integration tests.
+ * Required for entities that have user relations (e.g., Tag.createdBy).
+ */
+export function createTestUser(id?: string): Promise<User> {
+	return prisma.user.create({
+		data: {
+			id: id ?? crypto.randomUUID(),
+			name: "Test User",
+			email: `test-${Date.now()}-${Math.random().toString(36).slice(2)}@example.com`,
+		},
+	});
+}
+
+/**
+ * Create a test client for integration tests.
+ * Required for testing tag-client associations.
+ */
+export function createTestClient(whatsapp?: string): Promise<Client> {
+	return prisma.client.create({
+		data: {
+			whatsapp: whatsapp ?? `+5511${Date.now().toString().slice(-9)}`,
+		},
+	});
+}
+
+/**
+ * Create a test client field for integration tests.
+ */
+export function createTestClientField(
+	name: string,
+	type: FieldType = "TEXT",
+	required = false,
+	options: string[] = []
+): Promise<ClientField> {
+	return prisma.clientField.create({
+		data: {
+			name,
+			type,
+			required,
+			options,
+			order: 0,
+		},
+	});
+}
+
+/**
+ * Create a test tag for integration tests.
+ */
+export function createTestTag(
+	createdBy: string,
+	name?: string,
+	color?: string
+): Promise<Tag> {
+	return prisma.tag.create({
+		data: {
+			name: name ?? `Tag-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+			color,
+			createdBy,
+		},
+	});
+}
+
+/**
+ * Create a test appointment for integration tests.
+ */
+export function createTestAppointment(
+	clientId: string,
+	assignedTo: string,
+	createdBy: string,
+	scheduledAt: Date,
+	status: AppointmentStatus = "OPEN"
+): Promise<Appointment> {
+	return prisma.appointment.create({
+		data: {
+			clientId,
+			assignedTo,
+			createdBy,
+			scheduledAt,
+			status,
+		},
+	});
+}

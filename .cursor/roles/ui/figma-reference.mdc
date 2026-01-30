@@ -1,0 +1,265 @@
+---
+alwaysApply: false
+---
+
+# FIGMA REFERENCE — Untitled UI (VISUAL GUIDANCE)
+
+Este arquivo documenta a **referência visual oficial** do projeto.
+
+O Figma **não define valores**. Ele **demonstra padrões**.
+Tokens reais têm precedência absoluta.
+
+---
+
+## 1. FONTE E LIMITAÇÕES
+
+**Arquivo:** Untitled UI – FREE Figma UI kit and design system v2.0
+**URL:** `figma.com/design/V2WA55qe9agfPCiUXBPqZc`
+
+### O que o Figma representa
+
+* Padrões de composição
+* Hierarquia visual de referência
+* Proporções e ritmo
+* Estados de componentes
+* Estrutura de layouts
+
+### O que o Figma NÃO define
+
+* Valores de tokens (vivem no código)
+* Cores finais (adaptadas para verde)
+* Decisões de produto
+* Comportamento de interação
+* Lógica de negócio
+
+---
+
+## 2. ADAPTAÇÃO DO SISTEMA
+
+O Untitled UI usa **roxo** como cor principal.
+Este projeto usa **verde #05603A** como cor principal.
+
+| Original (Untitled UI) | Adaptado (CRM) |
+|------------------------|----------------|
+| Purple/Brand | Green/Brand |
+| Purple como accent | Verde como accent |
+| Purple em estados | Verde em estados |
+
+**Gray scale, Error, Warning, Info** → mantidos idênticos ao original.
+
+---
+
+## 3. PADRÕES DE COMPOSIÇÃO
+
+### Densidade
+
+* **Alta densidade:** Tabelas, listas, admin panels
+* **Média densidade:** Formulários, cards de conteúdo
+* **Baixa densidade:** Headers, empty states, onboarding
+
+### Hierarquia de Superfícies
+
+```
+Nível 0: Page background (gray-50)
+Nível 1: Cards, containers (white)
+Nível 2: Elevated (white + shadow-sm)
+Nível 3: Floating (white + shadow-lg) — modals, dropdowns
+```
+
+### Hierarquia de Texto
+
+```
+Heading primário: gray-900, semibold
+Heading secundário: gray-700, semibold
+Corpo: gray-700, regular
+Secundário: gray-600, regular
+Terciário: gray-500, regular
+Placeholder: gray-500, regular
+Disabled: gray-400
+```
+
+---
+
+## 4. PADRÕES DE COMPONENTES
+
+### Buttons
+
+| Tipo | Superfície | Texto | Borda |
+|------|------------|-------|-------|
+| Primary | brand-700 | white | none |
+| Secondary | gray-100 | gray-700 | none |
+| Outline | white | gray-700 | gray-300 |
+| Ghost | transparent | gray-700 | none |
+| Destructive | error-600 | white | none |
+
+**Estados consistentes:**
+* Hover: -100 na escala (mais escuro)
+* Active: -200 na escala
+* Focus: ring-4 com brand-100 ou cor equivalente
+
+### Inputs
+
+| Estado | Borda | Ring |
+|--------|-------|------|
+| Default | gray-300 | none |
+| Focus | brand-500 | brand-100 |
+| Error | error-500 | error-100 |
+| Disabled | gray-200 | none |
+
+### Badges / Tags
+
+| Tipo | Background | Texto | Borda |
+|------|------------|-------|-------|
+| Success | brand-50 | brand-700 | brand-200 |
+| Error | error-50 | error-700 | error-200 |
+| Warning | warning-50 | warning-700 | warning-200 |
+| Neutral | gray-100 | gray-700 | gray-200 |
+
+### Cards
+
+* Border: gray-200
+* Radius: xl (12px)
+* Shadow: sm (em hover ou elevação)
+* Padding: 6 (24px)
+
+### Tables
+
+* Header: gray-50 background, gray-600 text
+* Row: white background, gray-200 border
+* Cell padding: py-4 px-6
+* Checkbox: primeira coluna, alinhamento center
+
+### Modals
+
+* Overlay: gray-900/50
+* Surface: white
+* Radius: xl
+* Shadow: xl
+* Padding: 6 (24px)
+
+---
+
+## 5. PADRÕES DE LAYOUT
+
+### Page Structure
+
+```
+┌─────────────────────────────────────────┐
+│ Header (h-16, border-b)                 │
+├──────────┬──────────────────────────────┤
+│ Sidebar  │ Main Content                 │
+│ (w-72)   │ (flex-1)                     │
+│          │                              │
+│          │ ┌─ Page Header ─────────────┐│
+│          │ │ Title        Actions      ││
+│          │ └───────────────────────────┘│
+│          │                              │
+│          │ ┌─ Content ─────────────────┐│
+│          │ │                           ││
+│          │ │                           ││
+│          │ └───────────────────────────┘│
+└──────────┴──────────────────────────────┘
+```
+
+### Container
+
+* Max-width: 1280px
+* Padding horizontal: 80px (desktop), 32px (tablet), 16px (mobile)
+
+### Spacing Rhythm
+
+* Entre seções: 8 (32px) ou 16 (64px)
+* Entre elementos relacionados: 4 (16px) ou 6 (24px)
+* Entre label e input: 1.5 (6px)
+* Entre items em lista: 0 (border divide)
+
+---
+
+## 6. PADRÕES DE ESTADOS
+
+### Loading
+
+* Skeleton: gray-200 com pulse animation
+* Spinner: brand-600
+* Overlay: white/80 com spinner central
+
+### Empty
+
+* Ilustração ou ícone grande (gray-400)
+* Título explicativo (gray-900, semibold)
+* Descrição (gray-600, regular)
+* CTA primário (opcional)
+
+### Error
+
+* Mensagem inline: error-600 text
+* Toast: error background com white text
+* Input: error-500 border + error-100 ring
+
+---
+
+## 7. APLICAÇÃO NO CRM
+
+### Mapeamento de Telas
+
+| Tela | Referência Untitled UI |
+|------|------------------------|
+| Lista de Clientes | Customers table |
+| Form de Cliente | Settings form |
+| Calendário | Calendar views |
+| Modal de Atendimento | Side panel / Modal |
+| Admin Config | Settings page |
+
+### Cores Semânticas do CRM
+
+| Contexto | Cor | Token |
+|----------|-----|-------|
+| Atendimento OPEN | Verde | brand-600 |
+| Atendimento DONE | Cinza | gray-500 |
+| Atendimento CANCELLED | Vermelho | error-600 |
+| Atendimento ATRASADO | Amarelo | warning-500 |
+
+---
+
+## 8. REGRAS DE USO
+
+### PERMITIDO
+
+* Usar como referência de composição
+* Consultar proporções e ritmo
+* Verificar padrões de estados
+* Validar hierarquia visual
+
+### PROIBIDO
+
+* Copiar valores hex diretamente
+* Usar como fonte de verdade
+* Ignorar tokens reais
+* Criar exceções baseadas no Figma
+
+---
+
+## 9. HIERARQUIA DE AUTORIDADE
+
+Em caso de conflito:
+
+```
+1. Tokens reais (globals.css / Tailwind)     ← VERDADE
+2. Token Rules (tokens.mdc)                  ← CONTRATO
+3. Figma Reference (este arquivo)            ← GUIDANCE
+4. Opinião ou preferência                    ← ÚLTIMO RECURSO
+```
+
+---
+
+## 10. REGRA FINAL
+
+> **Figma demonstra. Tokens definem.**
+
+Se o Figma mostrar algo que não existe nos tokens:
+1. Não implemente
+2. Solicite criação do token
+3. Aguarde definição
+4. Não improvise
+
+---
