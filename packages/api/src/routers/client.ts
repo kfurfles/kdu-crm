@@ -7,6 +7,7 @@ import {
 	getClientHistorySchema,
 	getClientSchema,
 	listClientsSchema,
+	transferClientSchema,
 	updateClientSchema,
 } from "../schemas/client";
 
@@ -320,7 +321,7 @@ export const clientRouter = {
 		})
 		.input(updateClientSchema)
 		.handler(async ({ context, input }) => {
-			const { id, whatsapp, notes, assignedTo, fieldValues } = input;
+			const { id, whatsapp, notes, fieldValues } = input;
 
 			// Verificar se cliente existe e não está deletado
 			const currentClient = await context.prisma.client.findUnique({
@@ -341,13 +342,12 @@ export const clientRouter = {
 
 			// Atualizar cliente em transação
 			await context.prisma.$transaction(async (tx) => {
-				// 1. Atualizar dados básicos
+				// 1. Atualizar dados básicos (exceto assignedTo - usar rota transfer)
 				await tx.client.update({
 					where: { id },
 					data: {
 						...(whatsapp !== undefined && { whatsapp }),
 						...(notes !== undefined && { notes }),
-						...(assignedTo !== undefined && { assignedTo }),
 					},
 				});
 
@@ -482,5 +482,94 @@ export const clientRouter = {
 				page,
 				pageSize,
 			};
+		}),
+
+	/**
+	 * Transfere um cliente para outro usuário
+	 * Também transfere os appointments OPEN para o novo responsável
+	 */
+	transfer: publicProcedure
+		.route({
+			method: "POST",
+			path: "/clients/{id}/transfer",
+			summary: "Transferir cliente",
+			description:
+				"Transfere um cliente para outro usuário. Todos os atendimentos OPEN também são transferidos.",
+			tags: ["Client"],
+		})
+		.input(transferClientSchema)
+		.handler(async ({ context, input }) => {
+			const { id, newAssigneeId } = input;
+
+			// Verificar se cliente existe e não está deletado
+			const client = await context.prisma.client.findUnique({
+				where: { id },
+			});
+
+			if (!client) {
+				throw new ORPCError("NOT_FOUND", {
+					message: "Cliente não encontrado",
+				});
+			}
+
+			if (client.deletedAt) {
+				throw new ORPCError("BAD_REQUEST", {
+					message: "Não é possível transferir um cliente desativado",
+				});
+			}
+
+			// Verificar se novo responsável existe
+			const newAssignee = await context.prisma.user.findUnique({
+				where: { id: newAssigneeId },
+			});
+
+			if (!newAssignee) {
+				throw new ORPCError("NOT_FOUND", {
+					message: "Novo responsável não encontrado",
+				});
+			}
+
+			// Verificar se é o mesmo responsável
+			if (client.assignedTo === newAssigneeId) {
+				throw new ORPCError("BAD_REQUEST", {
+					message: "Cliente já está atribuído a este usuário",
+				});
+			}
+
+			// Executar transferência em transação
+			await context.prisma.$transaction(async (tx) => {
+				// 1. Atualizar responsável do cliente
+				await tx.client.update({
+					where: { id },
+					data: { assignedTo: newAssigneeId },
+				});
+
+				// 2. Transferir todos os appointments OPEN
+				await tx.appointment.updateMany({
+					where: {
+						clientId: id,
+						status: "OPEN",
+					},
+					data: {
+						assignedTo: newAssigneeId,
+					},
+				});
+			});
+
+			// Retornar cliente atualizado
+			return context.prisma.client.findUnique({
+				where: { id },
+				include: {
+					tags: {
+						include: { tag: true },
+					},
+					fieldValues: {
+						include: { field: true },
+					},
+					assignee: {
+						select: { id: true, name: true, email: true },
+					},
+				},
+			});
 		}),
 };

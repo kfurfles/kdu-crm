@@ -2,6 +2,7 @@ import { ORPCError } from "@orpc/server";
 
 import { publicProcedure } from "../index";
 import {
+	cancelAppointmentSchema,
 	createAppointmentSchema,
 	finalizeAppointmentSchema,
 	getAppointmentSchema,
@@ -421,5 +422,67 @@ export const appointmentRouter = {
 			});
 
 			return result;
+		}),
+
+	/**
+	 * Cancela um atendimento
+	 */
+	cancel: publicProcedure
+		.route({
+			method: "POST",
+			path: "/appointments/{id}/cancel",
+			summary: "Cancelar atendimento",
+			description:
+				"Cancela um atendimento aberto, registrando o motivo do cancelamento.",
+			tags: ["Appointment"],
+		})
+		.input(cancelAppointmentSchema)
+		.handler(async ({ context, input }) => {
+			const { id, reason } = input;
+
+			// Buscar atendimento
+			const appointment = await context.prisma.appointment.findUnique({
+				where: { id },
+			});
+
+			if (!appointment) {
+				throw new ORPCError("NOT_FOUND", {
+					message: "Atendimento não encontrado",
+				});
+			}
+
+			// Validar status - apenas OPEN pode ser cancelado
+			if (appointment.status === "DONE") {
+				throw new ORPCError("BAD_REQUEST", {
+					message: "Atendimento concluído não pode ser cancelado",
+				});
+			}
+
+			if (appointment.status === "CANCELLED") {
+				throw new ORPCError("BAD_REQUEST", {
+					message: "Atendimento já está cancelado",
+				});
+			}
+
+			// Cancelar atendimento
+			const cancelled = await context.prisma.appointment.update({
+				where: { id },
+				data: {
+					status: "CANCELLED",
+					cancelReason: reason,
+					cancelledAt: new Date(),
+				},
+				include: {
+					client: true,
+					assignee: {
+						select: { id: true, name: true, email: true },
+					},
+					creator: {
+						select: { id: true, name: true, email: true },
+					},
+				},
+			});
+
+			return cancelled;
 		}),
 };

@@ -36,6 +36,7 @@ export const createClientSchema = z.object({
 
 /**
  * Schema para atualizar um cliente
+ * Nota: Para transferir cliente, use a rota transfer
  */
 export const updateClientSchema = z.object({
 	id: z.string().min(1, "ID é obrigatório"),
@@ -47,7 +48,6 @@ export const updateClientSchema = z.object({
 		)
 		.optional(),
 	notes: z.string().optional(),
-	assignedTo: z.string().optional(),
 	fieldValues: z.array(fieldValueSchema).optional(),
 });
 
@@ -85,6 +85,14 @@ export const getClientHistorySchema = z.object({
 });
 
 /**
+ * Schema para transferir cliente para outro usuário
+ */
+export const transferClientSchema = z.object({
+	id: z.string().min(1, "ID do cliente é obrigatório"),
+	newAssigneeId: z.string().min(1, "ID do novo responsável é obrigatório"),
+});
+
+/**
  * Tipos inferidos dos schemas
  */
 export type CreateClientInput = z.infer<typeof createClientSchema>;
@@ -93,4 +101,5 @@ export type ListClientsInput = z.infer<typeof listClientsSchema>;
 export type GetClientInput = z.infer<typeof getClientSchema>;
 export type DeactivateClientInput = z.infer<typeof deactivateClientSchema>;
 export type GetClientHistoryInput = z.infer<typeof getClientHistorySchema>;
+export type TransferClientInput = z.infer<typeof transferClientSchema>;
 export type FieldValueInput = z.infer<typeof fieldValueSchema>;

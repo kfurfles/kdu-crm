@@ -6,9 +6,13 @@ export default defineConfig({
 		environment: "node",
 		include: ["src/**/*.test.ts"],
 		testTimeout: 60_000, // 60s for Testcontainers startup
-		hookTimeout: 60_000,
+		hookTimeout: 120_000,
 		pool: "forks", // Better isolation for DB tests
-		isolate: false, // Share container across tests
+		poolOptions: {
+			forks: {
+				singleFork: true, // Run all tests in a single fork to share container
+			},
+		},
 		sequence: {
 			concurrent: false, // Run tests sequentially
 		},

@@ -126,6 +126,7 @@ model Appointment {
   scheduledAt  DateTime
   status       AppointmentStatus @default(OPEN)
   cancelReason String?
+  cancelledAt  DateTime?
   createdBy    String
   creator      User              @relation("AppointmentCreator", fields: [createdBy], references: [id])
   createdAt    DateTime          @default(now())

@@ -664,7 +664,7 @@ describe("Client API", () => {
 			expect(result?.notes).toBe("Nota nova");
 		});
 
-		it("deve atualizar assignedTo", async () => {
+		it("deve transferir cliente para outro usuário", async () => {
 			const user1 = await createTestUser();
 			const user2 = await createTestUser();
 			const client = await prisma.client.create({
@@ -676,10 +676,10 @@ describe("Client API", () => {
 
 			const context = createTestContext();
 			const result = await call(
-				clientRouter.update,
+				clientRouter.transfer,
 				{
 					id: client.id,
-					assignedTo: user2.id,
+					newAssigneeId: user2.id,
 				},
 				{ context }
 			);

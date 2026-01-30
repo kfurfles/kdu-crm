@@ -63,6 +63,14 @@ export const finalizeAppointmentSchema = z.object({
 });
 
 /**
+ * Schema para cancelar um atendimento
+ */
+export const cancelAppointmentSchema = z.object({
+	id: z.string().min(1, "ID é obrigatório"),
+	reason: z.string().min(1, "Motivo do cancelamento é obrigatório"),
+});
+
+/**
  * Tipos inferidos dos schemas
  */
 export type ListAppointmentsInput = z.infer<typeof listAppointmentsSchema>;
@@ -74,3 +82,4 @@ export type RescheduleAppointmentInput = z.infer<
 export type FinalizeAppointmentInput = z.infer<
 	typeof finalizeAppointmentSchema
 >;
+export type CancelAppointmentInput = z.infer<typeof cancelAppointmentSchema>;
