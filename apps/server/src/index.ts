@@ -121,5 +121,6 @@ fastify.listen({ port: 3000 }, (err) => {
 		fastify.log.error(err);
 		process.exit(1);
 	}
+	console.log("DOCS: http://localhost:3000/api-reference");
 	console.log("Server running on port 3000");
 });

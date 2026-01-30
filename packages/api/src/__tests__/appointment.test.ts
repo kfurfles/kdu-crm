@@ -3,7 +3,9 @@ import { describe, expect, it } from "vitest";
 import { appointmentRouter } from "../routers/appointment";
 import {
 	createTestAppointment,
+	createTestClientField,
 	createTestContext,
+	createTestTag,
 	createTestUser,
 	prisma,
 } from "./setup";
@@ -631,6 +633,443 @@ describe("Appointment API", () => {
 					{ context }
 				)
 			).rejects.toThrow("Atendimento não encontrado");
+		});
+	});
+
+	describe("finalize - Finalizar atendimento", () => {
+		it("deve finalizar atendimento com sucesso (criar interaction, marcar DONE, criar próximo OPEN)", async () => {
+			const user = await createTestUser();
+			const client = await prisma.client.create({
+				data: {
+					whatsapp: "+5511999990001",
+					notes: "Cliente importante",
+					assignedTo: user.id,
+				},
+			});
+
+			const now = new Date();
+			const scheduledAt = new Date(now.getTime() - 60 * 60 * 1000); // 1h atrás
+
+			const appointment = await prisma.appointment.create({
+				data: {
+					clientId: client.id,
+					assignedTo: user.id,
+					scheduledAt,
+					status: "OPEN",
+					createdBy: user.id,
+				},
+			});
+
+			const startedAt = new Date(now.getTime() - 30 * 60 * 1000); // 30 min atrás
+			const nextAppointmentDate = new Date();
+			nextAppointmentDate.setDate(nextAppointmentDate.getDate() + 7);
+			nextAppointmentDate.setHours(14, 0, 0, 0);
+
+			const context = createTestContext();
+			const result = await call(
+				appointmentRouter.finalize,
+				{
+					id: appointment.id,
+					userId: user.id,
+					startedAt: startedAt.toISOString(),
+					summary: "Discussão sobre renovação de contrato",
+					outcome: "Cliente vai pensar e retornar",
+					nextAppointmentDate: nextAppointmentDate.toISOString(),
+				},
+				{ context }
+			);
+
+			// Verifica interação criada
+			expect(result.interaction).toBeDefined();
+			expect(result.interaction.summary).toBe(
+				"Discussão sobre renovação de contrato"
+			);
+			expect(result.interaction.outcome).toBe("Cliente vai pensar e retornar");
+			expect(result.interaction.appointmentId).toBe(appointment.id);
+			expect(result.interaction.clientId).toBe(client.id);
+			expect(result.interaction.userId).toBe(user.id);
+
+			// Verifica appointment original marcado como DONE
+			expect(result.appointment).toBeDefined();
+			expect(result.appointment.id).toBe(appointment.id);
+			expect(result.appointment.status).toBe("DONE");
+
+			// Verifica próximo appointment criado como OPEN
+			expect(result.nextAppointment).toBeDefined();
+			expect(result.nextAppointment.status).toBe("OPEN");
+			expect(result.nextAppointment.clientId).toBe(client.id);
+			expect(result.nextAppointment.assignedTo).toBe(user.id);
+			expect(new Date(result.nextAppointment.scheduledAt).getTime()).toBe(
+				nextAppointmentDate.getTime()
+			);
+		});
+
+		it("deve recusar data do próximo atendimento no passado", async () => {
+			const user = await createTestUser();
+			const client = await prisma.client.create({
+				data: { whatsapp: "+5511999990001", assignedTo: user.id },
+			});
+
+			const appointment = await prisma.appointment.create({
+				data: {
+					clientId: client.id,
+					assignedTo: user.id,
+					scheduledAt: new Date(),
+					status: "OPEN",
+					createdBy: user.id,
+				},
+			});
+
+			const yesterday = new Date();
+			yesterday.setDate(yesterday.getDate() - 1);
+
+			const context = createTestContext();
+
+			await expect(
+				call(
+					appointmentRouter.finalize,
+					{
+						id: appointment.id,
+						userId: user.id,
+						startedAt: new Date().toISOString(),
+						summary: "Resumo",
+						outcome: "Resultado",
+						nextAppointmentDate: yesterday.toISOString(),
+					},
+					{ context }
+				)
+			).rejects.toThrow("data do próximo atendimento deve ser futura");
+		});
+
+		it("deve capturar snapshot com dados do cliente, campos e tags", async () => {
+			const user = await createTestUser();
+
+			// Criar campo customizável
+			const field = await createTestClientField("Renda", "NUMBER", false);
+
+			// Criar tag
+			const tag = await createTestTag(user.id, "VIP", "#FFD700");
+
+			// Criar cliente com campo e tag
+			const client = await prisma.client.create({
+				data: {
+					whatsapp: "+5511999990001",
+					notes: "Cliente premium",
+					assignedTo: user.id,
+				},
+			});
+
+			// Associar valor do campo
+			await prisma.clientFieldValue.create({
+				data: {
+					clientId: client.id,
+					fieldId: field.id,
+					value: "10000",
+				},
+			});
+
+			// Associar tag
+			await prisma.clientTag.create({
+				data: {
+					clientId: client.id,
+					tagId: tag.id,
+				},
+			});
+
+			const appointment = await prisma.appointment.create({
+				data: {
+					clientId: client.id,
+					assignedTo: user.id,
+					scheduledAt: new Date(),
+					status: "OPEN",
+					createdBy: user.id,
+				},
+			});
+
+			const nextDate = new Date();
+			nextDate.setDate(nextDate.getDate() + 7);
+
+			const context = createTestContext();
+			const result = await call(
+				appointmentRouter.finalize,
+				{
+					id: appointment.id,
+					userId: user.id,
+					startedAt: new Date().toISOString(),
+					summary: "Reunião",
+					outcome: "OK",
+					nextAppointmentDate: nextDate.toISOString(),
+				},
+				{ context }
+			);
+
+			// Verificar snapshot
+			const snapshot = result.interaction.snapshot as {
+				whatsapp: string;
+				notes: string;
+				fieldValues: Array<{
+					fieldName: string;
+					fieldType: string;
+					value: string;
+				}>;
+				tags: Array<{ name: string; color: string | null }>;
+			};
+
+			expect(snapshot.whatsapp).toBe("+5511999990001");
+			expect(snapshot.notes).toBe("Cliente premium");
+			expect(snapshot.fieldValues).toHaveLength(1);
+			expect(snapshot.fieldValues[0]?.fieldName).toBe("Renda");
+			expect(snapshot.fieldValues[0]?.fieldType).toBe("NUMBER");
+			expect(snapshot.fieldValues[0]?.value).toBe("10000");
+			expect(snapshot.tags).toHaveLength(1);
+			expect(snapshot.tags[0]?.name).toBe("VIP");
+			expect(snapshot.tags[0]?.color).toBe("#FFD700");
+		});
+
+		it("deve registrar duração corretamente (endedAt - startedAt)", async () => {
+			const user = await createTestUser();
+			const client = await prisma.client.create({
+				data: { whatsapp: "+5511999990001", assignedTo: user.id },
+			});
+
+			const appointment = await prisma.appointment.create({
+				data: {
+					clientId: client.id,
+					assignedTo: user.id,
+					scheduledAt: new Date(),
+					status: "OPEN",
+					createdBy: user.id,
+				},
+			});
+
+			const startedAt = new Date();
+			startedAt.setMinutes(startedAt.getMinutes() - 25); // 25 min atrás
+
+			const nextDate = new Date();
+			nextDate.setDate(nextDate.getDate() + 7);
+
+			const context = createTestContext();
+			const result = await call(
+				appointmentRouter.finalize,
+				{
+					id: appointment.id,
+					userId: user.id,
+					startedAt: startedAt.toISOString(),
+					summary: "Reunião",
+					outcome: "OK",
+					nextAppointmentDate: nextDate.toISOString(),
+				},
+				{ context }
+			);
+
+			// endedAt deve ser próximo ao now (gerado automaticamente)
+			const endedAt = new Date(result.interaction.endedAt);
+			const interactionStartedAt = new Date(result.interaction.startedAt);
+
+			// Duração deve ser aproximadamente 25 minutos
+			const durationMs = endedAt.getTime() - interactionStartedAt.getTime();
+			const durationMinutes = durationMs / (1000 * 60);
+
+			expect(durationMinutes).toBeGreaterThanOrEqual(24);
+			expect(durationMinutes).toBeLessThanOrEqual(26);
+		});
+
+		it("deve recusar finalização de atendimento DONE", async () => {
+			const user = await createTestUser();
+			const client = await prisma.client.create({
+				data: { whatsapp: "+5511999990001", assignedTo: user.id },
+			});
+
+			const appointment = await prisma.appointment.create({
+				data: {
+					clientId: client.id,
+					assignedTo: user.id,
+					scheduledAt: new Date(),
+					status: "DONE",
+					createdBy: user.id,
+				},
+			});
+
+			const nextDate = new Date();
+			nextDate.setDate(nextDate.getDate() + 7);
+
+			const context = createTestContext();
+
+			await expect(
+				call(
+					appointmentRouter.finalize,
+					{
+						id: appointment.id,
+						userId: user.id,
+						startedAt: new Date().toISOString(),
+						summary: "Resumo",
+						outcome: "Resultado",
+						nextAppointmentDate: nextDate.toISOString(),
+					},
+					{ context }
+				)
+			).rejects.toThrow("Apenas atendimentos abertos podem ser finalizados");
+		});
+
+		it("deve recusar finalização de atendimento CANCELLED", async () => {
+			const user = await createTestUser();
+			const client = await prisma.client.create({
+				data: { whatsapp: "+5511999990001", assignedTo: user.id },
+			});
+
+			const appointment = await prisma.appointment.create({
+				data: {
+					clientId: client.id,
+					assignedTo: user.id,
+					scheduledAt: new Date(),
+					status: "CANCELLED",
+					createdBy: user.id,
+				},
+			});
+
+			const nextDate = new Date();
+			nextDate.setDate(nextDate.getDate() + 7);
+
+			const context = createTestContext();
+
+			await expect(
+				call(
+					appointmentRouter.finalize,
+					{
+						id: appointment.id,
+						userId: user.id,
+						startedAt: new Date().toISOString(),
+						summary: "Resumo",
+						outcome: "Resultado",
+						nextAppointmentDate: nextDate.toISOString(),
+					},
+					{ context }
+				)
+			).rejects.toThrow("Apenas atendimentos abertos podem ser finalizados");
+		});
+
+		it("deve retornar erro quando atendimento não existe", async () => {
+			const user = await createTestUser();
+			const nextDate = new Date();
+			nextDate.setDate(nextDate.getDate() + 7);
+
+			const context = createTestContext();
+
+			await expect(
+				call(
+					appointmentRouter.finalize,
+					{
+						id: "non-existent-id",
+						userId: user.id,
+						startedAt: new Date().toISOString(),
+						summary: "Resumo",
+						outcome: "Resultado",
+						nextAppointmentDate: nextDate.toISOString(),
+					},
+					{ context }
+				)
+			).rejects.toThrow("Atendimento não encontrado");
+		});
+
+		it("deve recusar finalização quando já existe interação", async () => {
+			const user = await createTestUser();
+			const client = await prisma.client.create({
+				data: { whatsapp: "+5511999990001", assignedTo: user.id },
+			});
+
+			const appointment = await prisma.appointment.create({
+				data: {
+					clientId: client.id,
+					assignedTo: user.id,
+					scheduledAt: new Date(),
+					status: "OPEN",
+					createdBy: user.id,
+				},
+			});
+
+			// Criar interação manualmente (simula duplicata)
+			await prisma.interaction.create({
+				data: {
+					appointmentId: appointment.id,
+					clientId: client.id,
+					userId: user.id,
+					startedAt: new Date(),
+					endedAt: new Date(),
+					summary: "Já finalizado",
+					outcome: "OK",
+					snapshot: {},
+				},
+			});
+
+			const nextDate = new Date();
+			nextDate.setDate(nextDate.getDate() + 7);
+
+			const context = createTestContext();
+
+			await expect(
+				call(
+					appointmentRouter.finalize,
+					{
+						id: appointment.id,
+						userId: user.id,
+						startedAt: new Date().toISOString(),
+						summary: "Resumo",
+						outcome: "Resultado",
+						nextAppointmentDate: nextDate.toISOString(),
+					},
+					{ context }
+				)
+			).rejects.toThrow("Atendimento já foi finalizado");
+		});
+
+		it("deve executar operação atômica - se falhar, nada é salvo", async () => {
+			const user = await createTestUser();
+			const client = await prisma.client.create({
+				data: { whatsapp: "+5511999990001", assignedTo: user.id },
+			});
+
+			const appointment = await prisma.appointment.create({
+				data: {
+					clientId: client.id,
+					assignedTo: user.id,
+					scheduledAt: new Date(),
+					status: "OPEN",
+					createdBy: user.id,
+				},
+			});
+
+			// Para testar atomicidade, tentamos finalizar com data inválida
+			// O que deve impedir toda a operação
+			const yesterday = new Date();
+			yesterday.setDate(yesterday.getDate() - 1);
+
+			const context = createTestContext();
+
+			await expect(
+				call(
+					appointmentRouter.finalize,
+					{
+						id: appointment.id,
+						userId: user.id,
+						startedAt: new Date().toISOString(),
+						summary: "Resumo",
+						outcome: "Resultado",
+						nextAppointmentDate: yesterday.toISOString(),
+					},
+					{ context }
+				)
+			).rejects.toThrow();
+
+			// Verificar que nada foi alterado
+			const unchangedAppointment = await prisma.appointment.findUnique({
+				where: { id: appointment.id },
+			});
+			expect(unchangedAppointment?.status).toBe("OPEN");
+
+			const interactions = await prisma.interaction.findMany({
+				where: { appointmentId: appointment.id },
+			});
+			expect(interactions).toHaveLength(0);
 		});
 	});
 });

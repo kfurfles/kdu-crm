@@ -1,5 +1,6 @@
 import { call } from "@orpc/server";
 import { describe, expect, it } from "vitest";
+import type { Context } from "../context";
 import { userRouter } from "../routers/user";
 import { createTestContext, createTestUser, prisma } from "./setup";
 
@@ -7,9 +8,33 @@ import { createTestContext, createTestUser, prisma } from "./setup";
  * Create a test context with a session (authenticated user).
  * Used to test operations that require authentication.
  */
-function createAuthenticatedContext(userId: string) {
+function createAuthenticatedContext(userId: string): Context {
 	return {
-		session: { user: { id: userId } },
+		session: {
+			session: {
+				id: "test-session-id",
+				createdAt: new Date(),
+				updatedAt: new Date(),
+				userId,
+				expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+				token: "test-token",
+				ipAddress: null,
+				userAgent: null,
+			},
+			user: {
+				id: userId,
+				name: "Test User",
+				email: "test@example.com",
+				emailVerified: true,
+				image: null,
+				banned: false,
+				banReason: null,
+				banExpires: null,
+				role: null,
+				createdAt: new Date(),
+				updatedAt: new Date(),
+			},
+		},
 		prisma,
 	};
 }

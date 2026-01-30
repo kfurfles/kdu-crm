@@ -46,6 +46,23 @@ export const rescheduleAppointmentSchema = z.object({
 });
 
 /**
+ * Schema para finalizar um atendimento
+ * Cria interação, marca como DONE e agenda próximo follow-up
+ */
+export const finalizeAppointmentSchema = z.object({
+	id: z.string().min(1, "ID é obrigatório"),
+	userId: z.string().min(1, "userId é obrigatório"),
+	startedAt: z
+		.string()
+		.datetime({ message: "startedAt deve ser uma data ISO válida" }),
+	summary: z.string().min(1, "Resumo é obrigatório"),
+	outcome: z.string().min(1, "Resultado é obrigatório"),
+	nextAppointmentDate: z
+		.string()
+		.datetime({ message: "Data do próximo atendimento deve ser ISO válida" }),
+});
+
+/**
  * Tipos inferidos dos schemas
  */
 export type ListAppointmentsInput = z.infer<typeof listAppointmentsSchema>;
@@ -53,4 +70,7 @@ export type GetAppointmentInput = z.infer<typeof getAppointmentSchema>;
 export type CreateAppointmentInput = z.infer<typeof createAppointmentSchema>;
 export type RescheduleAppointmentInput = z.infer<
 	typeof rescheduleAppointmentSchema
+>;
+export type FinalizeAppointmentInput = z.infer<
+	typeof finalizeAppointmentSchema
 >;

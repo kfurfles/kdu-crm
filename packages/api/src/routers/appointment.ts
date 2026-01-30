@@ -3,6 +3,7 @@ import { ORPCError } from "@orpc/server";
 import { publicProcedure } from "../index";
 import {
 	createAppointmentSchema,
+	finalizeAppointmentSchema,
 	getAppointmentSchema,
 	listAppointmentsSchema,
 	rescheduleAppointmentSchema,
@@ -278,5 +279,147 @@ export const appointmentRouter = {
 			});
 
 			return updated;
+		}),
+
+	/**
+	 * Finaliza um atendimento
+	 * Operação atômica: cria interação, marca DONE, cria próximo OPEN
+	 */
+	finalize: publicProcedure
+		.route({
+			method: "POST",
+			path: "/appointments/{id}/finalize",
+			summary: "Finalizar atendimento",
+			description:
+				"Finaliza um atendimento criando interação com snapshot, marcando como DONE e agendando próximo follow-up.",
+			tags: ["Appointment"],
+		})
+		.input(finalizeAppointmentSchema)
+		.handler(async ({ context, input }) => {
+			const { id, userId, startedAt, summary, outcome, nextAppointmentDate } =
+				input;
+			const nextDate = new Date(nextAppointmentDate);
+			const startedAtDate = new Date(startedAt);
+			const endedAt = new Date();
+
+			// Validar data futura para próximo atendimento
+			if (nextDate <= new Date()) {
+				throw new ORPCError("BAD_REQUEST", {
+					message: "A data do próximo atendimento deve ser futura",
+				});
+			}
+
+			// Buscar atendimento com dados do cliente
+			const appointment = await context.prisma.appointment.findUnique({
+				where: { id },
+				include: {
+					client: {
+						include: {
+							fieldValues: {
+								include: { field: true },
+							},
+							tags: {
+								include: { tag: true },
+							},
+						},
+					},
+					interaction: true,
+				},
+			});
+
+			if (!appointment) {
+				throw new ORPCError("NOT_FOUND", {
+					message: "Atendimento não encontrado",
+				});
+			}
+
+			// Validar status OPEN
+			if (appointment.status !== "OPEN") {
+				throw new ORPCError("BAD_REQUEST", {
+					message: "Apenas atendimentos abertos podem ser finalizados",
+				});
+			}
+
+			// Validar que não tem interação já
+			if (appointment.interaction) {
+				throw new ORPCError("CONFLICT", {
+					message: "Atendimento já foi finalizado",
+				});
+			}
+
+			// Construir snapshot
+			const snapshot = {
+				whatsapp: appointment.client.whatsapp,
+				notes: appointment.client.notes,
+				fieldValues: appointment.client.fieldValues.map((fv) => ({
+					fieldName: fv.field.name,
+					fieldType: fv.field.type,
+					value: fv.value,
+				})),
+				tags: appointment.client.tags.map((ct) => ({
+					name: ct.tag.name,
+					color: ct.tag.color,
+				})),
+			};
+
+			// Executar transação atômica
+			const result = await context.prisma.$transaction(async (tx) => {
+				// 1. Criar Interaction
+				const interaction = await tx.interaction.create({
+					data: {
+						appointmentId: id,
+						clientId: appointment.clientId,
+						userId,
+						startedAt: startedAtDate,
+						endedAt,
+						summary,
+						outcome,
+						snapshot,
+					},
+				});
+
+				// 2. Marcar Appointment como DONE
+				const updatedAppointment = await tx.appointment.update({
+					where: { id },
+					data: { status: "DONE" },
+					include: {
+						client: true,
+						assignee: {
+							select: { id: true, name: true, email: true },
+						},
+						creator: {
+							select: { id: true, name: true, email: true },
+						},
+					},
+				});
+
+				// 3. Criar próximo Appointment OPEN
+				const nextAppointment = await tx.appointment.create({
+					data: {
+						clientId: appointment.clientId,
+						assignedTo: appointment.assignedTo,
+						scheduledAt: nextDate,
+						status: "OPEN",
+						createdBy: userId,
+					},
+					include: {
+						client: true,
+						assignee: {
+							select: { id: true, name: true, email: true },
+						},
+						creator: {
+							select: { id: true, name: true, email: true },
+						},
+					},
+				});
+
+				return {
+					interaction,
+					appointment: updatedAppointment,
+					nextAppointment,
+				};
+			});
+
+			return result;
 		}),
 };
