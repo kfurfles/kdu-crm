@@ -56,15 +56,14 @@ export function ClientCard({ client, clientName }: ClientCardProps) {
 			</div>
 
 			<div className="flex items-center gap-2">
-				<Button asChild size="sm" variant="ghost">
-					<a
-						href={getWhatsAppLink(client.whatsapp)}
-						rel="noopener noreferrer"
-						target="_blank"
-					>
-						<MessageCircle className="h-4 w-4" />
-					</a>
-				</Button>
+				<a
+					className="inline-flex h-9 items-center justify-center rounded-md px-3 text-sm hover:bg-muted hover:text-foreground"
+					href={getWhatsAppLink(client.whatsapp)}
+					rel="noopener noreferrer"
+					target="_blank"
+				>
+					<MessageCircle className="h-4 w-4" />
+				</a>
 
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>

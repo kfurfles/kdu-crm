@@ -1,7 +1,6 @@
 import { Clock, MessageCircle } from "lucide-react";
 import { StatusBadge } from "@/components/status-badge";
 import { TagBadge } from "@/components/tag-badge";
-import { Button } from "@/components/ui/button";
 import type { Appointment } from "@/types/common.types";
 import { formatTime, getWhatsAppLink, isOverdue } from "@/utils/format";
 
@@ -57,20 +56,15 @@ export function AppointmentCard({
 				)}
 			</div>
 
-			<Button
-				asChild
+			<a
+				className="inline-flex h-9 items-center justify-center rounded-md px-3 text-sm hover:bg-muted hover:text-foreground"
+				href={getWhatsAppLink(appointment.clientWhatsapp)}
 				onClick={(e) => e.stopPropagation()}
-				size="sm"
-				variant="ghost"
+				rel="noopener noreferrer"
+				target="_blank"
 			>
-				<a
-					href={getWhatsAppLink(appointment.clientWhatsapp)}
-					rel="noopener noreferrer"
-					target="_blank"
-				>
-					<MessageCircle className="h-4 w-4" />
-				</a>
-			</Button>
+				<MessageCircle className="h-4 w-4" />
+			</a>
 		</>
 	);
 

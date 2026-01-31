@@ -33,9 +33,9 @@ const navItems: NavItem[] = [
 		href: "/users",
 	},
 	{
-		label: "Admin",
+		label: "Customizações",
 		items: [
-			{ label: "Campos Customizáveis", href: "/admin/fields" },
+			{ label: "Campos", href: "/admin/fields" },
 			{ label: "Tags", href: "/admin/tags" },
 		],
 	},

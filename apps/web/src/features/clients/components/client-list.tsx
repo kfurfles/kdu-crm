@@ -75,12 +75,13 @@ export function ClientList() {
 		<div className="flex flex-col gap-6 p-6">
 			<PageHeader
 				actions={
-					<Button asChild>
-						<Link to="/clients/new">
-							<Plus className="mr-2 h-4 w-4" />
-							Novo Cliente
-						</Link>
-					</Button>
+					<Link
+						className="inline-flex h-10 items-center justify-center rounded-lg border border-transparent bg-primary px-4 font-medium text-primary-foreground text-sm hover:bg-primary/80 focus-visible:border-ring focus-visible:ring-4 focus-visible:ring-ring/50"
+						to="/clients/new"
+					>
+						<Plus className="mr-2 h-4 w-4" />
+						Novo Cliente
+					</Link>
 				}
 				description={`${filteredClients.length} cliente${filteredClients.length !== 1 ? "s" : ""} encontrado${filteredClients.length !== 1 ? "s" : ""}`}
 				title="Clientes"
@@ -105,12 +106,13 @@ export function ClientList() {
 				<EmptyState
 					action={
 						!search && selectedTags.length === 0 ? (
-							<Button asChild>
-								<Link to="/clients/new">
-									<Plus className="mr-2 h-4 w-4" />
-									Novo Cliente
-								</Link>
-							</Button>
+							<Link
+								className="inline-flex h-10 items-center justify-center rounded-lg border border-transparent bg-primary px-4 font-medium text-primary-foreground text-sm hover:bg-primary/80"
+								to="/clients/new"
+							>
+								<Plus className="mr-2 h-4 w-4" />
+								Novo Cliente
+							</Link>
 						) : undefined
 					}
 					description={

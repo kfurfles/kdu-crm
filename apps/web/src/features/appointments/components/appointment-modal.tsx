@@ -51,25 +51,23 @@ export function AppointmentModal({
 									{appointment.clientName}
 								</span>
 								<div className="flex gap-2">
-									<Button asChild size="sm" variant="outline">
-										<a
-											href={getWhatsAppLink(appointment.clientWhatsapp)}
-											rel="noopener noreferrer"
-											target="_blank"
-										>
-											<MessageCircle className="mr-2 h-4 w-4" />
-											WhatsApp
-										</a>
-									</Button>
-									<Button asChild size="sm" variant="outline">
-										<Link
-											params={{ id: appointment.clientId }}
-											to="/clients/$id/edit"
-										>
-											<Pencil className="mr-2 h-4 w-4" />
-											Editar
-										</Link>
-									</Button>
+									<a
+										className="inline-flex h-9 items-center justify-center rounded-md border border-border bg-background px-3 font-medium text-sm hover:bg-muted hover:text-foreground"
+										href={getWhatsAppLink(appointment.clientWhatsapp)}
+										rel="noopener noreferrer"
+										target="_blank"
+									>
+										<MessageCircle className="mr-2 h-4 w-4" />
+										WhatsApp
+									</a>
+									<Link
+										className="inline-flex h-9 items-center justify-center rounded-md border border-border bg-background px-3 font-medium text-sm hover:bg-muted hover:text-foreground"
+										params={{ id: appointment.clientId }}
+										to="/clients/$id/edit"
+									>
+										<Pencil className="mr-2 h-4 w-4" />
+										Editar
+									</Link>
 								</div>
 							</div>
 
@@ -98,14 +96,13 @@ export function AppointmentModal({
 								Histórico de Interações
 							</h3>
 							{interactions.length > 0 && (
-								<Button asChild size="sm" variant="ghost">
-									<Link
-										params={{ id: appointment.clientId }}
-										to="/clients/$id/history"
-									>
-										Ver histórico completo
-									</Link>
-								</Button>
+								<Link
+									className="inline-flex h-9 items-center justify-center rounded-md px-3 text-sm hover:bg-muted hover:text-foreground"
+									params={{ id: appointment.clientId }}
+									to="/clients/$id/history"
+								>
+									Ver histórico completo
+								</Link>
 							)}
 						</div>
 

@@ -10,7 +10,6 @@
 
 import { Route as rootRouteImport } from './app/routes/__root'
 import { Route as SignupRouteImport } from './app/routes/signup'
-import { Route as ResetPasswordRouteImport } from './app/routes/reset-password'
 import { Route as LoginRouteImport } from './app/routes/login'
 import { Route as DashboardRouteImport } from './app/routes/dashboard'
 import { Route as IndexRouteImport } from './app/routes/index'
@@ -27,11 +26,6 @@ import { Route as ClientsIdEditRouteImport } from './app/routes/clients/$id/edit
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ResetPasswordRoute = ResetPasswordRouteImport.update({
-  id: '/reset-password',
-  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -99,7 +93,6 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
-  '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/admin/fields': typeof AdminFieldsRoute
   '/admin/tags': typeof AdminTagsRoute
@@ -115,7 +108,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
-  '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/admin/fields': typeof AdminFieldsRoute
   '/admin/tags': typeof AdminTagsRoute
@@ -132,7 +124,6 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
-  '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/admin/fields': typeof AdminFieldsRoute
   '/admin/tags': typeof AdminTagsRoute
@@ -150,7 +141,6 @@ export interface FileRouteTypes {
     | '/'
     | '/dashboard'
     | '/login'
-    | '/reset-password'
     | '/signup'
     | '/admin/fields'
     | '/admin/tags'
@@ -166,7 +156,6 @@ export interface FileRouteTypes {
     | '/'
     | '/dashboard'
     | '/login'
-    | '/reset-password'
     | '/signup'
     | '/admin/fields'
     | '/admin/tags'
@@ -182,7 +171,6 @@ export interface FileRouteTypes {
     | '/'
     | '/dashboard'
     | '/login'
-    | '/reset-password'
     | '/signup'
     | '/admin/fields'
     | '/admin/tags'
@@ -199,7 +187,6 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DashboardRoute: typeof DashboardRoute
   LoginRoute: typeof LoginRoute
-  ResetPasswordRoute: typeof ResetPasswordRoute
   SignupRoute: typeof SignupRoute
   AdminFieldsRoute: typeof AdminFieldsRoute
   AdminTagsRoute: typeof AdminTagsRoute
@@ -219,13 +206,6 @@ declare module '@tanstack/react-router' {
       path: '/signup'
       fullPath: '/signup'
       preLoaderRoute: typeof SignupRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/reset-password': {
-      id: '/reset-password'
-      path: '/reset-password'
-      fullPath: '/reset-password'
-      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -319,7 +299,6 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DashboardRoute: DashboardRoute,
   LoginRoute: LoginRoute,
-  ResetPasswordRoute: ResetPasswordRoute,
   SignupRoute: SignupRoute,
   AdminFieldsRoute: AdminFieldsRoute,
   AdminTagsRoute: AdminTagsRoute,
