@@ -1,0 +1,68 @@
+# Render Blueprint - CRM KDU
+# Docs: https://docs.render.com/infrastructure-as-code
+
+services:
+  # ===========================================
+  # Frontend - Static Site (free, no sleep)
+  # ===========================================
+  - type: web
+    name: crm-kdu-web
+    runtime: static
+    repo: https://github.com/SEU_USUARIO/crm-kdu  # <- substitua pelo seu repo
+    branch: main
+    buildCommand: pnpm install && pnpm --filter web build
+    staticPublishPath: apps/web/dist
+    envVars:
+      - key: VITE_SERVER_URL
+        value: https://crm-kdu-proxy.onrender.com
+      - key: NODE_VERSION
+        value: 20
+
+  # ===========================================
+  # Proxy - Web Service (free tier, sleep after 15min)
+  # ===========================================
+  - type: web
+    name: crm-kdu-proxy
+    runtime: node
+    repo: https://github.com/SEU_USUARIO/crm-kdu  # <- substitua pelo seu repo
+    branch: main
+    buildCommand: pnpm install && pnpm --filter proxy build && cp -r apps/web/dist apps/proxy/dist/static
+    startCommand: node apps/proxy/dist/index.mjs
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: HTTP_HOST
+        value: 0.0.0.0
+      - key: HTTP_PORT
+        value: 10000
+      - key: BACKEND_URL
+        value: https://crm-kdu-api.onrender.com
+      - key: NODE_VERSION
+        value: 20
+
+  # ===========================================
+  # Backend API - Web Service (free tier, sleep after 15min)
+  # ===========================================
+  - type: web
+    name: crm-kdu-api
+    runtime: node
+    repo: https://github.com/SEU_USUARIO/crm-kdu  # <- substitua pelo seu repo
+    branch: main
+    buildCommand: pnpm install && pnpm --filter @crm-kdu/db db:generate && pnpm --filter server build
+    startCommand: node apps/server/dist/index.mjs
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: 20
+      # Secrets - configure no Dashboard do Render
+      - key: DATABASE_URL
+        sync: false  # <- definir manualmente no dashboard
+      - key: BETTER_AUTH_SECRET
+        sync: false  # <- definir manualmente no dashboard
+      - key: BETTER_AUTH_URL
+        value: https://crm-kdu-proxy.onrender.com
+      - key: CORS_ORIGIN
+        value: https://crm-kdu-proxy.onrender.com
