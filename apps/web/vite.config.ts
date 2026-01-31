@@ -8,7 +8,12 @@ import { VitePWA } from "vite-plugin-pwa";
 export default defineConfig({
 	plugins: [
 		tailwindcss(),
-		tanstackRouter({}),
+		tanstackRouter({
+			target: "react",
+			autoCodeSplitting: true,
+			routesDirectory: "./src/app/routes",
+			generatedRouteTree: "./src/routeTree.gen.ts",
+		}),
 		react(),
 		VitePWA({
 			registerType: "autoUpdate",
@@ -29,5 +34,6 @@ export default defineConfig({
 	},
 	server: {
 		port: 3001,
+		allowedHosts: ["18fd06d46e70.ngrok-free.app"],
 	},
 });
