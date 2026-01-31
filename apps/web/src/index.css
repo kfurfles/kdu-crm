@@ -1,0 +1,17 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "../../../packages/ui/src/styles/globals.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@layer base {
+	* {
+		@apply border-border outline-ring/50;
+	}
+	body {
+		@apply font-sans bg-background text-foreground;
+	}
+	html {
+		@apply font-sans;
+	}
+}

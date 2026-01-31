@@ -1,0 +1,11 @@
+node_modules
+dist
+.turbo
+*.log
+.env
+.env.local
+
+# Prevent compiled JS in src (tsdown output should only be in dist)
+src/**/*.js
+src/**/*.d.ts
+src/**/*.map

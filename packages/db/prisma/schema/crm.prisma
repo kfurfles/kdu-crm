@@ -1,0 +1,182 @@
+// CRM Entities - Follow-up System
+
+// ============================================
+// ENUMS
+// ============================================
+
+enum FieldType {
+  TEXT
+  NUMBER
+  DATE
+  SELECT
+  CHECKBOX
+}
+
+enum AppointmentStatus {
+  OPEN
+  DONE
+  CANCELLED
+}
+
+enum ClientHistoryType {
+  CREATED
+  INTERACTION
+}
+
+// ============================================
+// CLIENT FIELD (Campo Customizável)
+// ============================================
+
+model ClientField {
+  id        String    @id @default(cuid())
+  name      String    @unique // Nome de exibição (único)
+  type      FieldType // Tipo do campo
+  required  Boolean   @default(false)
+  options   String[]  // Opções para SELECT
+  order     Int       @default(0)
+  active    Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  values ClientFieldValue[]
+
+  @@map("client_field")
+}
+
+// ============================================
+// TAG
+// ============================================
+
+model Tag {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  color     String?
+  createdBy String
+  creator   User     @relation(fields: [createdBy], references: [id])
+  createdAt DateTime @default(now())
+
+  clients ClientTag[]
+
+  @@map("tag")
+}
+
+// ============================================
+// CLIENT
+// ============================================
+
+model Client {
+  id         String    @id @default(cuid())
+  whatsapp   String    // Formato internacional
+  notes      String?
+  assignedTo String?
+  assignee   User?     @relation(fields: [assignedTo], references: [id])
+  deletedAt  DateTime? // Soft delete
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  fieldValues  ClientFieldValue[]
+  tags         ClientTag[]
+  appointments Appointment[]
+  interactions Interaction[]
+  history      ClientHistory[]
+
+  @@map("client")
+}
+
+// ============================================
+// CLIENT FIELD VALUE
+// ============================================
+
+model ClientFieldValue {
+  id       String      @id @default(cuid())
+  clientId String
+  client   Client      @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  fieldId  String
+  field    ClientField @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+  value    String      // Valor serializado
+
+  @@unique([clientId, fieldId])
+  @@map("client_field_value")
+}
+
+// ============================================
+// CLIENT TAG (Relação N:N)
+// ============================================
+
+model ClientTag {
+  clientId String
+  client   Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  tagId    String
+  tag      Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([clientId, tagId])
+  @@map("client_tag")
+}
+
+// ============================================
+// APPOINTMENT (Atendimento)
+// ============================================
+
+model Appointment {
+  id           String            @id @default(cuid())
+  clientId     String
+  client       Client            @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  assignedTo   String
+  assignee     User              @relation("AppointmentAssignee", fields: [assignedTo], references: [id])
+  scheduledAt  DateTime
+  status       AppointmentStatus @default(OPEN)
+  cancelReason String?
+  cancelledAt  DateTime?
+  createdBy    String
+  creator      User              @relation("AppointmentCreator", fields: [createdBy], references: [id])
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  interaction Interaction?
+
+  @@index([clientId])
+  @@index([assignedTo])
+  @@index([scheduledAt])
+  @@map("appointment")
+}
+
+// ============================================
+// INTERACTION (Interação)
+// ============================================
+
+model Interaction {
+  id            String      @id @default(cuid())
+  appointmentId String      @unique
+  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  clientId      String
+  client        Client      @relation(fields: [clientId], references: [id])
+  userId        String
+  user          User        @relation(fields: [userId], references: [id])
+  startedAt     DateTime
+  endedAt       DateTime
+  summary       String
+  outcome       String
+  snapshot      Json        // Dados do cliente + campos + tags no momento
+
+  @@index([clientId])
+  @@index([userId])
+  @@map("interaction")
+}
+
+// ============================================
+// CLIENT HISTORY (Histórico de Eventos)
+// ============================================
+
+model ClientHistory {
+  id        String            @id @default(cuid())
+  clientId  String
+  client    Client            @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  type      ClientHistoryType
+  data      Json              // Dados flexíveis do evento
+  createdBy String
+  creator   User              @relation(fields: [createdBy], references: [id])
+  createdAt DateTime          @default(now())
+
+  @@index([clientId])
+  @@map("client_history")
+}
